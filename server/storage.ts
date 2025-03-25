@@ -65,7 +65,7 @@ export interface IStorage {
   deleteListing(id: number): Promise<boolean>;
   
   // Session store
-  sessionStore: session.SessionStore;
+  sessionStore: any; // Use any type to avoid the SessionStore type error
 }
 
 export class MemStorage implements IStorage {
@@ -78,7 +78,7 @@ export class MemStorage implements IStorage {
   private invoicesData: Map<number, Invoice>;
   private marketplaceListingsData: Map<number, MarketplaceListing>;
   
-  sessionStore: session.SessionStore;
+  sessionStore: any; // Use any type to avoid the SessionStore type error
   
   private userId: number;
   private productId: number;
@@ -132,7 +132,13 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.userId++;
-    const user: User = { ...insertUser, id };
+    // Ensure all required fields have values
+    const user: User = { 
+      ...insertUser, 
+      id,
+      role: insertUser.role || "shop_owner",
+      companyName: insertUser.companyName || null 
+    };
     this.usersData.set(id, user);
     return user;
   }
@@ -153,7 +159,10 @@ export class MemStorage implements IStorage {
     const newProduct: Product = { 
       ...product, 
       id, 
-      createdAt: new Date() 
+      createdAt: new Date(),
+      description: product.description || null,
+      quantity: product.quantity || 0,
+      isListed: product.isListed || false
     };
     this.productsData.set(id, newProduct);
     return newProduct;
@@ -183,7 +192,11 @@ export class MemStorage implements IStorage {
   
   async createCategory(category: InsertCategory): Promise<Category> {
     const id = this.categoryId++;
-    const newCategory: Category = { ...category, id };
+    const newCategory: Category = { 
+      ...category, 
+      id,
+      description: category.description || null 
+    };
     this.categoriesData.set(id, newCategory);
     return newCategory;
   }
@@ -204,7 +217,11 @@ export class MemStorage implements IStorage {
     const newCustomer: Customer = { 
       ...customer, 
       id, 
-      createdAt: new Date() 
+      createdAt: new Date(),
+      email: customer.email || null,
+      phone: customer.phone || null,
+      address: customer.address || null,
+      isActive: customer.isActive ?? true
     };
     this.customersData.set(id, newCustomer);
     return newCustomer;
@@ -239,7 +256,8 @@ export class MemStorage implements IStorage {
     const newOrder: Order = { 
       ...order, 
       id, 
-      orderDate: new Date() 
+      orderDate: new Date(),
+      status: order.status || "pending"
     };
     this.ordersData.set(id, newOrder);
     return newOrder;

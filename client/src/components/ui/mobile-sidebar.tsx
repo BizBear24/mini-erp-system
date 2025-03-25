@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation, Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
-import { X } from "lucide-react";
+import { X, LogOut } from "lucide-react";
 
 export function MobileSidebar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,16 +21,41 @@ export function MobileSidebar() {
     closeSidebar();
   };
 
-  const navigationItems = [
-    { path: "/", label: "Dashboard", icon: "fa-tachometer-alt" },
-    { path: "/inventory", label: "Inventory", icon: "fa-box" },
-    { path: "/orders", label: "Orders", icon: "fa-shopping-cart" },
-    { path: "/customers", label: "Customers", icon: "fa-users" },
-    { path: "/products", label: "Products", icon: "fa-tag" },
-    { path: "/marketplace", label: "Marketplace", icon: "fa-store" },
-    { path: "/reports", label: "Reports", icon: "fa-chart-bar" },
-    { path: "/invoices", label: "Invoices", icon: "fa-file-invoice-dollar" },
+  // Common navigation items for all users
+  const commonNavItems = [
+    { path: "/", label: "Dashboard", icon: "fa-tachometer-alt", roles: ["shop_owner", "vendor"] },
+    { path: "/marketplace", label: "Marketplace", icon: "fa-store", roles: ["shop_owner", "vendor"] },
+    { path: "/reports", label: "Reports", icon: "fa-chart-bar", roles: ["shop_owner", "vendor"] },
   ];
+
+  // Shop owner specific navigation items
+  const shopOwnerNavItems = [
+    { path: "/inventory", label: "Inventory", icon: "fa-box", roles: ["shop_owner"] },
+    { path: "/orders", label: "Orders", icon: "fa-shopping-cart", roles: ["shop_owner"] },
+    { path: "/customers", label: "Customers", icon: "fa-users", roles: ["shop_owner"] },
+    { path: "/invoices", label: "Invoices", icon: "fa-file-invoice-dollar", roles: ["shop_owner"] },
+  ];
+
+  // Vendor specific navigation items
+  const vendorNavItems = [
+    { path: "/products", label: "Products", icon: "fa-tag", roles: ["vendor"] },
+  ];
+
+  // Combine navigation items based on user role
+  let navigationItems = [...commonNavItems];
+  if (user?.role === "shop_owner") {
+    navigationItems = [...navigationItems, ...shopOwnerNavItems];
+  } else if (user?.role === "vendor") {
+    navigationItems = [...navigationItems, ...vendorNavItems];
+  }
+
+  // Sort them by label
+  navigationItems.sort((a, b) => {
+    // Keep Dashboard at the top
+    if (a.path === "/") return -1;
+    if (b.path === "/") return 1;
+    return a.label.localeCompare(b.label);
+  });
 
   const isActive = (path: string) => location === path;
 
@@ -49,6 +74,7 @@ export function MobileSidebar() {
         type="button" 
         className="md:hidden text-gray-500 hover:text-gray-700 focus:outline-none"
         onClick={toggleSidebar}
+        aria-label="Open main menu"
       >
         <i className="fas fa-bars"></i>
       </button>
@@ -56,6 +82,8 @@ export function MobileSidebar() {
       {/* Mobile menu */}
       <div 
         className={`md:hidden fixed inset-0 z-40 ${isOpen ? "block" : "hidden"}`}
+        role="dialog"
+        aria-modal="true"
       >
         {/* Overlay */}
         <div 
@@ -70,6 +98,7 @@ export function MobileSidebar() {
               type="button" 
               className="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
               onClick={closeSidebar}
+              aria-label="Close menu"
             >
               <span className="sr-only">Close sidebar</span>
               <X className="h-6 w-6 text-white" />
@@ -79,6 +108,13 @@ export function MobileSidebar() {
           <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
             <div className="flex-shrink-0 flex items-center px-4">
               <h1 className="text-xl font-semibold text-primary">SAsS<span className="text-gray-500 text-sm font-normal"> ERP</span></h1>
+            </div>
+            <div className="px-4 mt-3">
+              <p className="text-sm font-medium text-gray-700">Welcome, {user?.fullName || "User"}</p>
+              <p className="text-xs font-medium text-gray-500">
+                {user?.role === "shop_owner" ? "Shop Owner" : "Vendor"}
+                {user?.companyName && ` at ${user.companyName}`}
+              </p>
             </div>
             <nav className="mt-5 px-2 space-y-1">
               {navigationItems.map((item) => (
@@ -96,13 +132,35 @@ export function MobileSidebar() {
                   {item.label}
                 </Link>
               ))}
-              <button 
-                onClick={handleLogout}
-                className="w-full flex items-center px-3 py-2 text-base font-medium rounded-md text-gray-700 hover:bg-gray-100"
-              >
-                <i className="fas fa-sign-out-alt w-5 h-5 mr-3 text-gray-500"></i>
-                Logout
-              </button>
+              
+              <div className="pt-4 mt-4 border-t border-gray-200">
+                <div className="px-3 space-y-1">
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Account
+                  </h3>
+                  <Link 
+                    href="#profile" 
+                    className="flex items-center px-3 py-2 text-base font-medium rounded-md text-gray-700 hover:bg-gray-100"
+                  >
+                    <i className="fas fa-user-circle w-5 h-5 mr-3 text-gray-500"></i>
+                    Profile
+                  </Link>
+                  <Link 
+                    href="#settings" 
+                    className="flex items-center px-3 py-2 text-base font-medium rounded-md text-gray-700 hover:bg-gray-100"
+                  >
+                    <i className="fas fa-cog w-5 h-5 mr-3 text-gray-500"></i>
+                    Settings
+                  </Link>
+                  <button 
+                    onClick={handleLogout}
+                    className="w-full flex items-center px-3 py-2 text-base font-medium rounded-md text-gray-700 hover:bg-gray-100"
+                  >
+                    <LogOut className="w-5 h-5 mr-3 text-gray-500" />
+                    Logout
+                  </button>
+                </div>
+              </div>
             </nav>
           </div>
           
@@ -113,9 +171,11 @@ export function MobileSidebar() {
                   {user ? getInitials(user.fullName) : "U"}
                 </div>
               </div>
-              <div className="ml-3">
-                <p className="text-base font-medium text-gray-700">{user?.fullName || "User"}</p>
-                <p className="text-sm font-medium text-gray-500">{user?.role === "shop_owner" ? "Shop Owner" : "Vendor"}</p>
+              <div className="ml-3 flex-grow truncate">
+                <p className="text-base font-medium text-gray-700 truncate">{user?.fullName || "User"}</p>
+                <p className="text-sm font-medium text-gray-500 truncate">
+                  {user?.email || ""}
+                </p>
               </div>
             </div>
           </div>
