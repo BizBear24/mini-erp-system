@@ -12,6 +12,7 @@ import Products from "@/pages/products";
 import Marketplace from "@/pages/marketplace";
 import Reports from "@/pages/reports";
 import Invoices from "@/pages/invoices";
+import ProfilePage from "@/pages/profile";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider } from "./hooks/use-auth";
 import AppLayout from "./layout/app-layout";
@@ -97,6 +98,16 @@ function Router() {
         component={() => (
           <AppLayout>
             <Reports />
+          </AppLayout>
+        )} 
+      />
+      
+      <ProtectedRoute 
+        path="/profile" 
+        allowedRoles={["shop_owner", "vendor"]}
+        component={() => (
+          <AppLayout>
+            <ProfilePage />
           </AppLayout>
         )} 
       />

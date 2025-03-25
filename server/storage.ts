@@ -308,7 +308,8 @@ export class MemStorage implements IStorage {
     const newInvoice: Invoice = { 
       ...invoice, 
       id, 
-      createdAt: new Date() 
+      createdAt: new Date(),
+      status: invoice.status || "unpaid"
     };
     this.invoicesData.set(id, newInvoice);
     return newInvoice;
@@ -345,7 +346,9 @@ export class MemStorage implements IStorage {
     const newListing: MarketplaceListing = { 
       ...listing, 
       id, 
-      createdAt: new Date() 
+      createdAt: new Date(),
+      isActive: listing.isActive ?? true,
+      minOrderQuantity: listing.minOrderQuantity || 1
     };
     this.marketplaceListingsData.set(id, newListing);
     return newListing;

@@ -139,14 +139,16 @@ export function MobileSidebar() {
                     Account
                   </h3>
                   <Link 
-                    href="#profile" 
+                    href="/profile" 
+                    onClick={closeSidebar}
                     className="flex items-center px-3 py-2 text-base font-medium rounded-md text-gray-700 hover:bg-gray-100"
                   >
                     <i className="fas fa-user-circle w-5 h-5 mr-3 text-gray-500"></i>
                     Profile
                   </Link>
                   <Link 
-                    href="#settings" 
+                    href="/profile?tab=security" 
+                    onClick={closeSidebar}
                     className="flex items-center px-3 py-2 text-base font-medium rounded-md text-gray-700 hover:bg-gray-100"
                   >
                     <i className="fas fa-cog w-5 h-5 mr-3 text-gray-500"></i>
