@@ -1,6 +1,8 @@
 import { useLocation, Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
-import { Cog } from "lucide-react";
+import { LogOut, Settings, UserCircle } from "lucide-react";
+import { Button } from "./button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./dropdown-menu";
 
 export function Sidebar() {
   const [location] = useLocation();
@@ -10,16 +12,41 @@ export function Sidebar() {
     logoutMutation.mutate();
   };
 
-  const navigationItems = [
-    { path: "/", label: "Dashboard", icon: "fa-tachometer-alt" },
-    { path: "/inventory", label: "Inventory", icon: "fa-box" },
-    { path: "/orders", label: "Orders", icon: "fa-shopping-cart" },
-    { path: "/customers", label: "Customers", icon: "fa-users" },
-    { path: "/products", label: "Products", icon: "fa-tag" },
-    { path: "/marketplace", label: "Marketplace", icon: "fa-store" },
-    { path: "/reports", label: "Reports", icon: "fa-chart-bar" },
-    { path: "/invoices", label: "Invoices", icon: "fa-file-invoice-dollar" },
+  // Common navigation items for all users
+  const commonNavItems = [
+    { path: "/", label: "Dashboard", icon: "fa-tachometer-alt", roles: ["shop_owner", "vendor"] },
+    { path: "/marketplace", label: "Marketplace", icon: "fa-store", roles: ["shop_owner", "vendor"] },
+    { path: "/reports", label: "Reports", icon: "fa-chart-bar", roles: ["shop_owner", "vendor"] },
   ];
+
+  // Shop owner specific navigation items
+  const shopOwnerNavItems = [
+    { path: "/inventory", label: "Inventory", icon: "fa-box", roles: ["shop_owner"] },
+    { path: "/orders", label: "Orders", icon: "fa-shopping-cart", roles: ["shop_owner"] },
+    { path: "/customers", label: "Customers", icon: "fa-users", roles: ["shop_owner"] },
+    { path: "/invoices", label: "Invoices", icon: "fa-file-invoice-dollar", roles: ["shop_owner"] },
+  ];
+
+  // Vendor specific navigation items
+  const vendorNavItems = [
+    { path: "/products", label: "Products", icon: "fa-tag", roles: ["vendor"] },
+  ];
+
+  // Combine navigation items based on user role
+  let navigationItems = [...commonNavItems];
+  if (user?.role === "shop_owner") {
+    navigationItems = [...navigationItems, ...shopOwnerNavItems];
+  } else if (user?.role === "vendor") {
+    navigationItems = [...navigationItems, ...vendorNavItems];
+  }
+
+  // Sort them by label
+  navigationItems.sort((a, b) => {
+    // Keep Dashboard at the top
+    if (a.path === "/") return -1;
+    if (b.path === "/") return 1;
+    return a.label.localeCompare(b.label);
+  });
 
   const isActive = (path: string) => location === path;
 
@@ -62,16 +89,38 @@ export function Sidebar() {
                 {user ? getInitials(user.fullName) : "U"}
               </div>
             </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-700">{user?.fullName || "User"}</p>
-              <p className="text-xs font-medium text-gray-500">{user?.role === "shop_owner" ? "Shop Owner" : "Vendor"}</p>
+            <div className="ml-3 flex-1 overflow-hidden">
+              <p className="text-sm font-medium text-gray-700 truncate">{user?.fullName || "User"}</p>
+              <p className="text-xs font-medium text-gray-500">
+                {user?.role === "shop_owner" ? "Shop Owner" : "Vendor"}
+                {user?.companyName && ` at ${user.companyName}`}
+              </p>
             </div>
-            <button 
-              onClick={handleLogout} 
-              className="ml-auto text-gray-500 hover:text-gray-700"
-            >
-              <Cog className="h-5 w-5" />
-            </button>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <UserCircle className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
