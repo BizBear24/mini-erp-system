@@ -63,4 +63,6 @@ npm run dev
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+Copyright © 2024 Abyankar Verma. All rights reserved.
+
+This project is proprietary and belongs exclusively to Abyankar Verma. Unauthorized copying, distribution, modification, public display, or public performance of this proprietary work is a violation of copyright law.
