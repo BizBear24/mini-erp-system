@@ -1,3 +1,5 @@
+btw this is outdated and useless now its an old version 
+
 # Mini ERP System with B2B Marketplace
 
 A comprehensive Mini Enterprise Resource Planning (ERP) system designed for small shops with an integrated B2B marketplace component.
